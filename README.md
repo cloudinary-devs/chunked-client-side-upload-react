@@ -1,2 +1,3 @@
 # chunked-client-side-upload-react
-Created with CodeSandbox
+
+An example showing how to use chunked POST requests to upload a large file to Cloudinary from the client side. 
