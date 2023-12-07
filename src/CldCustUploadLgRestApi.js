@@ -8,10 +8,7 @@ class CldCustUploadLgRestApi extends Component {
   processFile = async (e) => {
     const file = e.target.files[0];
     const XUniqueUploadId = +new Date();
-    await this.processFileChunks(file, XUniqueUploadId);
-  };
 
-  processFileChunks = async (file, XUniqueUploadId) => {
     const size = file.size;
     const sliceSize = 20000000;
     let start = 0;
