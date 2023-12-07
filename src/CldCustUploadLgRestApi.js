@@ -1,83 +1,73 @@
 import React, { Component } from "react";
 
 class CldCustUploadLgRestApi extends Component {
+  // Set your cloud name and unsigned upload preset here:
+  YOUR_CLOUD_NAME = "YOUR_CLOUD_NAME";
+  YOUR_UNSIGNED_UPLOAD_PRESET = "YOUR_UNSIGNED_UPLOAD_PRESET";
+
   processFile = async (e) => {
-    var file = e.target.files[0];
+    const file = e.target.files[0];
+    const XUniqueUploadId = +new Date();
+    await this.processFileChunks(file, XUniqueUploadId);
+  };
 
-    // Set your cloud name and unsigned upload preset here:
-    var YOUR_CLOUD_NAME = "YOUR_CLOUD_NAME";
-    var YOUR_UNSIGNED_UPLOAD_PRESET = "YOUR_UNSIGNED_UPLOAD_PRESET";
+  processFileChunks = async (file, XUniqueUploadId) => {
+    const size = file.size;
+    const sliceSize = 20000000;
+    let start = 0;
 
-    var POST_URL =
-      "https://api.cloudinary.com/v1_1/" + YOUR_CLOUD_NAME + "/auto/upload";
+    const loop = async () => {
+      let end = start + sliceSize;
 
-    var XUniqueUploadId = +new Date();
-
-    processFile();
-
-    function processFile(e) {
-      var size = file.size;
-      var sliceSize = 20000000;
-      var start = 0;
-
-      setTimeout(loop, 3);
-
-      function loop() {
-        var end = start + sliceSize;
-
-        if (end > size) {
-          end = size;
-        }
-        var s = slice(file, start, end);
-        send(s, start, end - 1, size);
-        if (end < size) {
-          start += sliceSize;
-          setTimeout(loop, 3);
-        }
+      if (end > size) {
+        end = size;
       }
+
+      const piece = file.slice(start, end);
+      await this.send(piece, start, end - 1, size, XUniqueUploadId);
+
+      if (end < size) {
+        start += sliceSize;
+        setTimeout(loop, 3);
+      }
+    };
+
+    setTimeout(loop, 3);
+  };
+
+  send = async (piece, start, end, size, XUniqueUploadId) => {
+    const POST_URL = `https://api.cloudinary.com/v1_1/${this.YOUR_CLOUD_NAME}/auto/upload`;
+
+    console.log("start", start);
+    console.log("end", end);
+    console.log("uploadId", XUniqueUploadId);
+
+    const formdata = new FormData();
+
+    formdata.append("file", piece);
+    formdata.append("cloud_name", this.YOUR_CLOUD_NAME);
+    formdata.append("upload_preset", this.YOUR_UNSIGNED_UPLOAD_PRESET);
+    formdata.append("public_id", "myChunkedFile");
+
+    try {
+      const response = await fetch(POST_URL, {
+        method: "POST",
+        headers: {
+          "X-Unique-Upload-Id": XUniqueUploadId,
+          "Content-Range": `bytes ${start}-${end}/${size}`,
+        },
+        body: formdata,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log(result);
+    } catch (error) {
+      console.error("Fetch error:", error.message);
     }
-
-    function send(piece, start, end, size) {
-      console.log("start ", start);
-      console.log("end", end);
-
-      var formdata = new FormData();
-      console.log(XUniqueUploadId);
-
-      formdata.append("file", piece);
-      formdata.append("cloud_name", YOUR_CLOUD_NAME);
-      formdata.append("upload_preset", YOUR_UNSIGNED_UPLOAD_PRESET);
-      formdata.append("public_id", "myChunkedFile2");
-
-      var xhr = new XMLHttpRequest();
-      xhr.open("POST", POST_URL, false);
-      xhr.setRequestHeader("X-Unique-Upload-Id", XUniqueUploadId);
-      xhr.setRequestHeader(
-        "Content-Range",
-        "bytes " + start + "-" + end + "/" + size
-      );
-
-      xhr.onload = function () {
-        // do something to response
-        console.log(this.responseText);
-      };
-
-      xhr.send(formdata);
-    }
-
-    function slice(file, start, end) {
-      var slice = file.mozSlice
-        ? file.mozSlice
-        : file.webkitSlice
-        ? file.webkitSlice
-        : file.slice
-        ? file.slice
-        : noop;
-
-      return slice.bind(file)(start, end);
-    }
-
-    function noop() {}
   };
 
   render() {
