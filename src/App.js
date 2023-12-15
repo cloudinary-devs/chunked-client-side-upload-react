@@ -1,5 +1,4 @@
-import CldCustUploadLgRestApi from "./CldCustUploadLgRestApi";
-
+import Chunked from "./Chunked";
 import "./styles.css";
 
 export default function App() {
@@ -7,9 +6,13 @@ export default function App() {
     <div className="App">
       <h1>Client-Side Upload Large File Demo</h1>
       <p>
-        Upload a large file from your local storage to your Cloudinary account.
+        Upload a large file from your local device to your Cloudinary account.
       </p>
-      <CldCustUploadLgRestApi />
+      <p>
+        Note: Before choosing a file, set your cloud name and unsigned upload
+        preset in Chunked.js.
+      </p>
+      <Chunked />
     </div>
   );
 }
