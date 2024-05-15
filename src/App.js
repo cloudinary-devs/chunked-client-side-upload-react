@@ -1,3 +1,4 @@
+import React from 'react';
 import Chunked from "./Chunked";
 import "./styles.css";
 

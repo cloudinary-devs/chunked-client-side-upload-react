@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState } from "react";
 
 // Set your cloud name and unsigned upload preset here:
